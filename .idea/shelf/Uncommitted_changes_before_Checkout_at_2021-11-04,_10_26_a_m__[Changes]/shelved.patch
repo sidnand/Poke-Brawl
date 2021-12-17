@@ -1,0 +1,55 @@
+Index: src/main/ui/UI.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package ui;\n\nimport javafx.scene.layout.Border;\nimport model.AI;\nimport model.Human;\nimport model.Manager;\nimport model.Type;\nimport model.types.Custom;\nimport model.types.*;\n\nimport javax.swing.*;\nimport javax.swing.text.JTextComponent;\nimport java.awt.*;\nimport java.awt.event.ActionEvent;\nimport java.awt.event.ActionListener;\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Scanner;\n\n// Class that holds the different components of the UI\npublic class UI {\n    JFrame frame = new JFrame();\n    JPanel typeEditor = new JPanel();\n    JPanel addType = new JPanel();\n    Manager manager;\n\n    public UI(Manager manager) {\n        this.manager = manager;\n    }\n\n    public String typesToString(List<Type> types) {\n        StringBuilder customTypeNames = new StringBuilder(\"Your Types:\\n\");\n        for (Type c : types) {\n            if (c instanceof Custom) {\n                customTypeNames.append(c.getName()).append(\"\\n\");\n            }\n        }\n\n        return customTypeNames.toString();\n    }\n\n    // MODIFIES: types\n    // EFFECT: shows the type editor\n    public void showTypeEditor(List<Type> types) {\n        // show all custom types\n        JLabel allTypes = new JLabel();\n        \n        allTypes.setText(typesToString(types));\n        typeEditor.add(allTypes);\n\n        // input to add type\n        JButton addNewType = new JButton(\"Create Type\");\n        JTextField typeNameInput = new JTextField();\n        typeNameInput.setText(\"Name of type\");\n        JTextField superEffectiveInput = new JTextField();\n        superEffectiveInput.setText(\"Super effective against, ie: Fire Water\");\n        JTextField notEffectiveInput = new JTextField();\n        notEffectiveInput.setText(\"Not effective against, ie: Normal Grass\");\n\n        addNewType.addActionListener(e -> {\n            // parse inputs\n            String typeName = typeNameInput.getText();\n            String superEffective = superEffectiveInput.getText();\n            String notEffective = notEffectiveInput.getText();\n\n            // convert types to string\n            String[] superEffectiveTypesString = superEffective.split(\"\\\\s+\");\n            String[] notEffectiveTypesString = notEffective.split(\"\\\\s+\");\n\n            List<Type> superEffectiveTypes = new ArrayList<>();\n            List<Type> notEffectiveTypes = new ArrayList<>();\n\n            for (String s : superEffectiveTypesString) {\n                if (s.equalsIgnoreCase(\"fire\")) {\n                    superEffectiveTypes.add(new Fire());\n                } else if (s.equalsIgnoreCase(\"water\")) {\n                    superEffectiveTypes.add(new Water());\n                } else if (s.equalsIgnoreCase(\"grass\")) {\n                    superEffectiveTypes.add(new Grass());\n                } else if (s.equalsIgnoreCase(\"normal\")) {\n                    superEffectiveTypes.add(new Normal());\n                }\n            }\n\n            for (String s : notEffectiveTypesString) {\n                if (s.equalsIgnoreCase(\"fire\")) {\n                    notEffectiveTypes.add(new Fire());\n                } else if (s.equalsIgnoreCase(\"water\")) {\n                    notEffectiveTypes.add(new Water());\n                } else if (s.equalsIgnoreCase(\"grass\")) {\n                    notEffectiveTypes.add(new Grass());\n                } else if (s.equalsIgnoreCase(\"normal\")) {\n                    notEffectiveTypes.add(new Normal());\n                }\n            }\n\n            Type c = new Custom(typeName, superEffectiveTypes, notEffectiveTypes);\n            types.add(c);\n            allTypes.setText(typesToString(types));\n\n            typeNameInput.setText(\"Name of type\");\n            superEffectiveInput.setText(\"Super effective against, ie: Fire Water\");\n            notEffectiveInput.setText(\"Not effective against, ie: Normal Grass\");\n\n            addType.setVisible(false);\n            frame.add(typeEditor, BorderLayout.CENTER);\n            typeEditor.setVisible(true);\n\n        });\n\n        addType.add(typeNameInput);\n        addType.add(superEffectiveInput);\n        addType.add(notEffectiveInput);\n        addType.add(addNewType);\n\n        // add type\n        JButton addBTN = new JButton(\"Add Type\");\n\n        addBTN.addActionListener(e -> {\n            addType.setVisible(true);\n            frame.add(addType, BorderLayout.CENTER);\n            typeEditor.setVisible(false);\n        });\n\n        typeEditor.add(addBTN);\n\n        // delete custom type\n        JButton delBTN = new JButton(\"Delete Type\");\n        typeEditor.add(delBTN);\n\n        // done\n        JButton doneBTN = new JButton(\"Done\");\n\n        doneBTN.addActionListener(e -> {\n            frame.dispose();\n        });\n\n        typeEditor.add(doneBTN);\n\n\n        addType.setLayout(new GridLayout(5, 5));\n        typeEditor.setLayout(new GridLayout(5, 5));\n\n        frame.setPreferredSize(new Dimension(600, 400));\n        frame.add(typeEditor, BorderLayout.CENTER);\n\n        frame.setTitle(\"Poke Brawl\");\n        frame.pack();\n        frame.setVisible(true);\n    }\n\n    // EFFECT: allows the user to type\n    public String askHuman() {\n        System.out.print(\"\\nPlease pick a type or type 'quit' to save and exit: \");\n\n        return getInput();\n    }\n\n    // EFFECT: displays a list of all types\n    public void showTypes(List<Type> types) {\n        System.out.println(\"\\nAll Types:\");\n        for (Type t : types) {\n            System.out.print(t.getName() + \" \");\n        }\n    }\n\n    // EFFECT: shows the health\n    public void showHealth(Human human, AI ai) {\n        System.out.println(\"\\nYour health: \" + human.getHealth());\n        System.out.println(\"Your opponents health: \" + ai.getHealth());\n    }\n\n    // EFFECT: displays each player's type\n    public void showEachPlayersType(Human human, AI ai) {\n        System.out.println(\"\\nYou picked: \" + human.getType().getName());\n        System.out.println(\"Your opponent picked: \" + ai.getType().getName());\n    }\n\n    // EFFECT: shows ui dialogue of whose turn it is\n    public void showAttackTurn(boolean isHuman, Human human, AI ai) {\n        if (isHuman) {\n            System.out.println(\"Your turn to attack. You used a \" + human.getType().getName() + \" move.\\n\");\n        } else {\n            System.out.println(\"Your opponent's turn to attack. They used a \" + ai.getType().getName() + \" move.\\n\");\n        }\n    }\n\n    // EFFECT: shows ui dialogue of how much damage was inflicted\n    public void showAttackDamage(boolean isHuman, int damage) {\n        if (isHuman) {\n            System.out.println(\"You decreased your opponent's health by: \" + damage + \"\\n\");\n        } else {\n            System.out.println(\"Your opponent decreased your health by: \" + damage + \"\\n\");\n        }\n    }\n\n    // EFFECT: asks if the player wants to play again\n    public String askPlayAgain() {\n        System.out.print(\"\\nWant to play again? [Y / N]: \");\n\n        return getInput();\n    }\n\n    // EFFECTS: gets user input and returns it\n    public String getInput() {\n        Scanner reader = new Scanner(System.in);\n        return reader.next();\n    }\n\n    // REQUIRES: state = 0 means a draw\n    //           state = 1 means human lost\n    //           state = any other number means ai lost\n    // EFFECTS: shows if human won, lost or game was a draw\n    public void showEndGame(int state) {\n        if (state == 0) {\n            System.out.println(\"It's a draw!\\n\");\n        } else if (state == 1) {\n            System.out.println(\"You Lose!\\n\");\n        } else {\n            System.out.println(\"You Win!\\n\");\n        }\n    }\n\n    // EFFECTS: shows the menu\n    public void showMenu() {\n        System.out.println(\"[1] Play\");\n        System.out.println(\"[2] Edit Types\");\n        System.out.println(\"[3] Quit\");\n        System.out.print(\"Type an option: \");\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/ui/UI.java b/src/main/ui/UI.java
+--- a/src/main/ui/UI.java	
++++ b/src/main/ui/UI.java	
+@@ -22,6 +22,7 @@
+     JFrame frame = new JFrame();
+     JPanel typeEditor = new JPanel();
+     JPanel addType = new JPanel();
++    JPanel delType = new JPanel();
+     Manager manager;
+ 
+     public UI(Manager manager) {
+@@ -128,6 +129,28 @@
+         JButton delBTN = new JButton("Delete Type");
+         typeEditor.add(delBTN);
+ 
++        delBTN.addActionListener(e -> {
++            delType.setVisible(true);
++            frame.add(delType, BorderLayout.CENTER);
++            typeEditor.setVisible(false);
++        });
++
++        JTextField typeToDel = new JTextField();
++        typeToDel.setText("Name of type");
++
++        JButton del = new JButton("Delete");
++
++        delType.add(typeToDel);
++        delType.add(del);
++
++        del.addActionListener(e -> {
++            typeToDel.setText("Name of type");
++
++            delType.setVisible(false);
++            frame.add(typeEditor, BorderLayout.CENTER);
++            typeEditor.setVisible(true);
++        });
++
+         // done
+         JButton doneBTN = new JButton("Done");
+ 
+@@ -139,6 +162,7 @@
+ 
+ 
+         addType.setLayout(new GridLayout(5, 5));
++        delType.setLayout(new GridLayout(5, 5));
+         typeEditor.setLayout(new GridLayout(5, 5));
+ 
+         frame.setPreferredSize(new Dimension(600, 400));
